@@ -13,8 +13,6 @@ from dataclasses import dataclass
 from datetime import datetime
 
 
-from werkzeug.datastructures import FileStorage
-
 #from util.utils import get_keyvault_secret
 
 app = flask.Flask(__name__)
@@ -224,5 +222,5 @@ def createDirectories():
     if(not os.path.isdir(processedFileDirectory)):
         os.mkdir(processedFileDirectory)
 
-#Lets Go!
+# Lets Go!
 app.run()
