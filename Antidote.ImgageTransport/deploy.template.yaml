@@ -1,0 +1,6 @@
+spec:
+  services:
+    - name: jiraToDropbox
+      git:
+        branch: master
+        repo_clone_url: https://github.com/finominal/antidoteJiraToDropbox
