@@ -80,7 +80,7 @@ async def jiraCreate():
 @app.route('/process', methods=['GET'])
 def test():
     ProcessNewTickets()
-    return "Test ok!"
+    return "Processed ok!"
 
 def PersistRequstData(requestData, ticketNo):
     filename  = jiraFileDirectory + "/" + ticketNo + ".json"
@@ -94,7 +94,9 @@ def ProcessNewTickets():
     result = False
     filenames = next(walk(jiraFileDirectory), (None, None, []))[2]  # [] if no file
     for filename in  filenames:
-        with open(filename) as ticket:
+        fullFileName =  jiraFileDirectory + "/" + filename
+        print("Opening " + fullFileName)
+        with open(fullFileName) as ticket:
             result = processJiraCreated( json.loads(ticket.read()))
         if(result): #move file if successfull
             timeStr = datetime.now().strftime("%m%d%Y%H%M%S")
