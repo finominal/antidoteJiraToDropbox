@@ -1,6 +1,6 @@
 /Antidote.ImgageTransport/jiraticketsprocessed/*
 /Antidote.ImgageTransport/fileCache/*
-
+*.pyc
 #Ignore thumbnails created by Windows
 Thumbs.db
 #Ignore files built by Visual Studio
