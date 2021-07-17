@@ -1,9 +1,6 @@
 import os
 import flask
-import threading
 from flask import request
-from dataclasses import dataclass
-from datetime import datetime
 
 #from util.utils import get_keyvault_secret
 
@@ -18,8 +15,6 @@ fileCacheDir = "./fileCache/"
 
 jiraFileDirectory = "./jiraticketsnew"
 processedFileDirectory = "./jiraticketsprocessed"
-
-workerThread = threading.Thread()
 
 #setup
 @app.before_first_request #this runs each request. Find a better home
