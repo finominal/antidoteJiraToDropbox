@@ -33,6 +33,11 @@ async def jiraCreate():
     PersistRequstData(request.data, ticketNo)
     return "Recieved " + ticketNo
 
+    #flask routes
+@app.route('/heathcheck', methods=['GET'])
+def home():
+    return "<h1> Antidote Biomedical </h1> </p> <div> " + str(app.url_map) + "<div>"
+
 #Helpers
 def PersistRequstData(requestData, ticketNo):
     filename  = jiraFileDirectory + "/" + ticketNo + ".json"
