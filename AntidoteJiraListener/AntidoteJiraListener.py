@@ -28,7 +28,7 @@ def home():
     return "<h1> Antidote Biomedical </h1> </p> <div> " + str(app.url_map) + "<div>"
 
 @app.route('/api/v1/webhook/jira/createOrUpdate', methods=['POST'])
-async def jiraCreate():
+def jiraCreate():
     jiraData = request.json
     ticketNo = jiraData["key"]
     PersistRequstData(request.data, ticketNo)
@@ -37,7 +37,7 @@ async def jiraCreate():
     #flask routes
 @app.route('/heathcheck', methods=['GET'])
 def heathcheck():
-    return "<h1> Antidote Biomedical </h1> </p> <div> " + str(app.url_map) + "<div>"
+    return "Health OK!"
 
 #Helpers
 def PersistRequstData(requestData, ticketNo):
