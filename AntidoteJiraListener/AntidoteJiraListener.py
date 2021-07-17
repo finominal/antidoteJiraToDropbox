@@ -7,6 +7,7 @@ from flask import request
 app = flask.Flask(__name__)
 app.config["DEBUG"] = False
 
+
 #secrets/env
 userJira = "production@antidote.com.au"
 keyJira = "DQoADgLH6p1KaatHWGyQ909C"
@@ -53,4 +54,4 @@ def createDirectories():
         os.mkdir(processedFileDirectory)
 
 # Lets Go!
-app.run()
+app.run(host="0.0.0.0", port=8080)
