@@ -8,7 +8,7 @@ from datetime import datetime
 #from util.utils import get_keyvault_secret
 
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 
 #secrets/env
 userJira = "production@antidote.com.au"
