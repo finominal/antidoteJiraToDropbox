@@ -35,7 +35,7 @@ async def jiraCreate():
 
     #flask routes
 @app.route('/heathcheck', methods=['GET'])
-def home():
+def heathcheck():
     return "<h1> Antidote Biomedical </h1> </p> <div> " + str(app.url_map) + "<div>"
 
 #Helpers
