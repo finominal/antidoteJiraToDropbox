@@ -55,14 +55,14 @@ def activate_job():
 
     createDirectories() #some local file directories are needed. 
 
-    def run_job():
-        while True:
-            ProcessNewTickets()
-            time.sleep(10)
+    # def run_job():
+    #     while True:
+    #         ProcessNewTickets()
+    #         time.sleep(10)
 
-    if ( workerThread.is_alive() == False): #start/restart the worker
-        thread = threading.Thread(target=run_job)
-        thread.start()
+    # if ( workerThread.is_alive() == False): #start/restart the worker
+    #     thread = threading.Thread(target=run_job)
+    #     thread.start()
 
 
 #flask routes
