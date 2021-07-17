@@ -1,6 +1,0 @@
-spec:
-  services:
-    - name: antidote-jiratodropbox
-      git:
-        branch: master
-        repo_clone_url: https://github.com/finominal/antidoteJiraToDropbox

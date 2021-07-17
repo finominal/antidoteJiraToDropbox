@@ -1,5 +1,4 @@
 import os
-import flask
 import requests
 import json
 import dropbox
@@ -8,15 +7,11 @@ import threading
 import time
 import logging
 from os import walk
-from flask import request
 from dataclasses import dataclass
 from datetime import datetime
 
 
 #from util.utils import get_keyvault_secret
-
-app = flask.Flask(__name__)
-app.config["DEBUG"] = True
 
 #secrets/env
 userJira = "production@antidote.com.au"
@@ -24,10 +19,12 @@ keyJira = "DQoADgLH6p1KaatHWGyQ909C"
 dbAppkey = "6ujo80qcw6sy4zk"
 dbAppSecret = "ush0ui2khvjgj92"
 dbAccessToken = "Gpw-anEq8LcAAAAAAAAAAfYIj9oInmdE8Tk0h0Vtns25OF9xjkUAiYOJ5VeE1hn1"
+
 fileCacheDir = "./fileCache/"
 
 jiraFileDirectory = "./jiraticketsnew"
 processedFileDirectory = "./jiraticketsprocessed"
+heartbeatUrl = "abc"
 
 workerThread = threading.Thread()
 
@@ -45,54 +42,16 @@ class JiraAttachment:
 # production@antidote.com.au|DQoADgLH6p1KaatHWGyQ909C
 #jira token header https://developer.atlassian.com/server/jira/platform/basic-authentication/
 
-#mock JiraData for testing
-# with open('AB-85.json') as j:
-#     jiraJson =  json.loads(j.read())
-
-#setup
-@app.before_first_request #this runs each request. Find a better home
-def activate_job():
-
-    createDirectories() #some local file directories are needed. 
-
-    # def run_job():
-    #     while True:
-    #         ProcessNewTickets()
-    #         time.sleep(10)
-
-    # if ( workerThread.is_alive() == False): #start/restart the worker
-    #     thread = threading.Thread(target=run_job)
-    #     thread.start()
-
-
-#flask routes
-@app.route('/', methods=['GET'])
-def home():
-    return "<h1> Antidote Biomedical </h1> </p> <div> " + str(app.url_map) + "<div>"
-
-@app.route('/api/v1/webhook/jira/createOrUpdate', methods=['POST'])
-async def jiraCreate():
-    jiraData = request.json
-    ticketNo = jiraData["key"]
-    PersistRequstData(request.data, ticketNo)
-    return "Recieved " + ticketNo
-
-@app.route('/process', methods=['GET'])
-def test():
-    ProcessNewTickets()
-    return "Processed ok!"
-
-def PersistRequstData(requestData, ticketNo):
-    filename  = jiraFileDirectory + "/" + ticketNo + ".json"
-    open(filename, "wb").write(requestData) #stream to file
-
+def SendHeartBeat(url):
+    #httpGet(url)
+    print(" SentHeartbeat")
 
 ##### WORKER THREAD LOOP
-
 # Everything after this will go into a worker in a thread. 
 def ProcessNewTickets():
     result = False
     filenames = next(walk(jiraFileDirectory), (None, None, []))[2]  # [] if no file
+
     for filename in  filenames:
         fullFileName =  jiraFileDirectory + "/" + filename
         print("Opening " + fullFileName)
@@ -134,6 +93,11 @@ def getJiraAttachment(attachmentMetadata):
 
 def httpGet(url, username, password):
     r = requests.get(url, auth=(username,password))
+    r.raise_for_status() 
+    return r
+
+def httpGet(url):
+    r = requests.get(url)
     r.raise_for_status() 
     return r
 
@@ -224,5 +188,19 @@ def createDirectories():
     if(not os.path.isdir(processedFileDirectory)):
         os.mkdir(processedFileDirectory)
 
-# Lets Go!
-app.run()
+def run_job():
+    createDirectories()
+    while True:
+        try:
+            print("Worker running: " + datetime.utcnow().strftime('%B %d %Y - %H:%M:%S'))
+            SendHeartBeat(heartbeatUrl)
+            ProcessNewTickets()
+            time.sleep(10)  
+        except AssertionError as error:
+            print('Exception Thrown '+ datetime.utcnow().strftime('%B %d %Y - %H:%M:%S ' ))
+            print(error)
+
+#Start the APP
+if ( workerThread.is_alive() == False): #start/restart the worker
+    thread = threading.Thread(target=run_job)
+    thread.start() 
