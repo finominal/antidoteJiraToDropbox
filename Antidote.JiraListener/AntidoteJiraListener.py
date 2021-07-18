@@ -1,7 +1,7 @@
 import os
 import flask
 from flask import request
-import spaces
+from spaces import spaces
 
 #from util.utils import get_keyvault_secret
 
