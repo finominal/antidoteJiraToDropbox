@@ -18,9 +18,9 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from datetime import datetime
 
 #your key id
-key_id = str("Your-id-or-key")
+key_id = str("THJ2HKRSFAH6RTJ6W43O")
 #your secret key
-secret_access_key = str("Your-secret-key")
+secret_access_key = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
 
 
 regions = ['ams3', 'nyc3', 'sgp1', 'sfo2']

@@ -17,7 +17,6 @@ space_name = "antidote-jira-metadata-store"
 space_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
 jiraFileDirectory = "jiraticketsnew"
-processedFileDirectory = "jiraticketsprocessed"
 
 #setup
 @app.before_first_request #this runs each request. Find a better home
@@ -37,24 +36,24 @@ def jiraCreate():
     return "Recieved " + ticketNo
 
     #flask routes
-@app.route('/heathcheck', methods=['GET'])
+@app.route('/healthcheck', methods=['GET'])
 def heathcheck():
     return "Health OK!"
 
 #Helpers
 def PersistRequstData(requestData, ticketNo):
-    filename  = "./" + jiraFileDirectory + "/" + ticketNo + ".json"
-    open(filename, "wb").write(requestData) #stream to file
-    spaces.upload_file(space_name, space_region, filename,  ticketNo + ".json")
+    uploadFilename = jiraFileDirectory + "/" + ticketNo + ".json"
+    localFilename  = "./" + uploadFilename
+    open(localFilename, "wb").write(requestData) #stream to file
+    result = spaces.upload_file(space_name, space_region, localFilename, uploadFilename)
+    if result == "Success":
+        os.remove(localFilename)
 
 def createDirectories():
     #Create save directory 
     if(not os.path.isdir(jiraFileDirectory)):
         os.mkdir(jiraFileDirectory)
 
-    #Create processed directory
-    if(not os.path.isdir(processedFileDirectory)):
-        os.mkdir(processedFileDirectory)
-
 # Lets Go!
-app.run(host="0.0.0.0", port=8080)
+#app.run(host="0.0.0.0", port=8080)
+app.run(host="127.0.0.1", port=8080)
