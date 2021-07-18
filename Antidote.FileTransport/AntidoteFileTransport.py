@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 import logging
+import spaces
 from os import walk
 from dataclasses import dataclass
 from datetime import datetime
