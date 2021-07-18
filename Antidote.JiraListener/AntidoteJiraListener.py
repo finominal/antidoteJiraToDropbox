@@ -1,6 +1,7 @@
 import os
 import flask
 from flask import request
+from spaces import spaces
 
 #from util.utils import get_keyvault_secret
 
@@ -12,10 +13,11 @@ app.config["DEBUG"] = False
 userJira = "production@antidote.com.au"
 keyJira = "DQoADgLH6p1KaatHWGyQ909C"
 
-fileCacheDir = "./fileCache/"
+space_name = "antidote-jira-metadata-store"
+space_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
-jiraFileDirectory = "./jiraticketsnew"
-processedFileDirectory = "./jiraticketsprocessed"
+jiraFileDirectory = "jiraticketsnew"
+processedFileDirectory = "jiraticketsprocessed"
 
 #setup
 @app.before_first_request #this runs each request. Find a better home
@@ -41,8 +43,9 @@ def heathcheck():
 
 #Helpers
 def PersistRequstData(requestData, ticketNo):
-    filename  = jiraFileDirectory + "/" + ticketNo + ".json"
+    filename  = "./" + jiraFileDirectory + "/" + ticketNo + ".json"
     open(filename, "wb").write(requestData) #stream to file
+    spaces.upload_file(space_name, space_region, filename,  ticketNo + ".json")
 
 def createDirectories():
     #Create save directory 
