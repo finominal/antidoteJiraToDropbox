@@ -5,8 +5,7 @@ import dropbox
 import sys
 import threading
 import time
-import logging
-import shutil
+import glob
 from dataclasses import dataclass
 from datetime import datetime
 from boto3 import session
@@ -56,31 +55,35 @@ def SendHeartBeat(url):
 ##### WORKER THREAD LOOP
 # Everything after this will go into a worker in a thread. 
 def ProcessNewTickets():
-    ClearTempDirectory()
+    PrepareTempDirectory() #create/clear
 
-    filenames = list_files(spaces_name, jiraNewFileDirectory)
+    filenames = s3_list_files(spaces_name, jiraNewFileDirectory)
 
     for filename in filenames:
         print("Retrieving " + filename)
-        download_file(spaces_name, filename)
+        s3_download_file(spaces_name, filename)
 
         with open(filename) as ticket:
             result = processJiraAttachments( json.loads( ticket.read() ) )
 
             if(result): #move file if successfull
-                timeStr = datetime.now().strftime("%m%d%Y%H%M%S")
+                timeStr = datetime.now().strftime("%Y%m%d%H%M%S")
 
                 leafFileName = path_leaf(filename)
-                upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + "_"+ leafFileName)
+                s3_upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + "_" +  leafFileName) 
 
-                delete_file(spaces_name, filename)
+                s3_delete_file(spaces_name, filename)
 
         os.remove(filename) #remove the local file
 
-def ClearTempDirectory():
-    if os.path.exists("./"+ jiraNewFileDirectory):
-        shutil.rmtree("./"+jiraNewFileDirectory) #clear the current holding directory
-
+def PrepareTempDirectory():
+    if os.path.exists(jiraNewFileDirectory):
+        files = glob.glob(jiraNewFileDirectory + "/*")
+        for f in files:
+            os.remove(f)
+    else :
+        os.mkdir(jiraNewFileDirectory)
+  
 def path_leaf(path):
     return os.path.split(path)[1]
 
@@ -201,18 +204,7 @@ def dbUploadBytes(
             location += chunk_size
             cursor.offset = location
 
-#Helpers
-# def createDirectories():
-#     #Create save directory 
-#     if(not os.path.isdir(jiraNewFileDirectory)):
-#         os.mkdir(jiraNewFileDirectory)
-
-#     #Create processed directory
-#     if(not os.path.isdir(processedFileDirectory)):
-#         os.mkdir(processedFileDirectory)
-
-
-def list_files( space_name, directory):
+def s3_list_files( space_name, directory):
     
     bucket = s3resource.Bucket(name=space_name)
     results = []
@@ -223,8 +215,9 @@ def list_files( space_name, directory):
     filtered = list(filter(lambda k: directory in k, results))
     return  filtered
 
-def download_file(space_name, file_name):
+def s3_download_file(space_name, file_name):
     try:
+        #s3resource.meta.client.download_file(space_name, file_name, file_name)
         s3resource.Bucket(space_name).download_file(file_name, file_name)
         message = "Success"
         return message
@@ -234,7 +227,7 @@ def download_file(space_name, file_name):
 
     return message
 
-def upload_file(space_name, local_file, upload_name):
+def s3_upload_file(space_name, local_file, upload_name):
     try:
         s3resource.meta.client.upload_file(local_file, space_name, upload_name)
         message = "Success"
@@ -245,7 +238,7 @@ def upload_file(space_name, local_file, upload_name):
 
     return message
 
-def delete_file(space_name, file_name):
+def s3_delete_file(space_name, file_name):
     try:
         s3resource.Object(space_name, file_name).delete()
         message = "Success"

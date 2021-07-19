@@ -1,5 +1,6 @@
 import os
 import flask
+import glob
 from boto3 import session
 from flask import request
 
@@ -64,8 +65,11 @@ def PersistRequstData(requestData, ticketNo):
         os.remove(localFilename)
 
 def createDirectories():
-    #Create save directory 
-    if(not os.path.isdir(jiraFileDirectory)):
+    if os.path.exists(jiraFileDirectory):
+        files = glob.glob(jiraFileDirectory + "/*")
+        for f in files:
+            os.remove(f)
+    else :
         os.mkdir(jiraFileDirectory)
 
 def upload_file(space_name, local_file, upload_name):
