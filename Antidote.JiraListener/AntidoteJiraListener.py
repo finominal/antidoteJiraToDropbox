@@ -12,8 +12,7 @@ spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
 s3sesseion = session.Session()
 
-def getS3Resource() :
-    return  s3sesseion.resource('s3',
+s3resource = s3sesseion.resource('s3',
                     region_name=spaces_region,
                     endpoint_url='https://'+spaces_region+'.digitaloceanspaces.com',
                     aws_access_key_id=ACCESS_ID,
@@ -70,9 +69,8 @@ def createDirectories():
         os.mkdir(jiraFileDirectory)
 
 def upload_file(space_name, local_file, upload_name):
-    s3  = getS3Resource()
     try:
-        s3.meta.client.upload_file(local_file, space_name, upload_name)
+        s3resource.meta.client.upload_file(local_file, space_name, upload_name)
         message = "Success"
         return message
         # pass

@@ -6,40 +6,26 @@ import sys
 import threading
 import time
 import logging
-import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from boto3 import session
 
 ACCESS_ID = str("THJ2HKRSFAH6RTJ6W43O")
 SECRET_KEY = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
-REGION = str("sfo3")
-
-s3sesseion = session.Session()
-s3resource = s3sesseion.resource('s3',
-                    region_name=REGION,
-                    endpoint_url='https://'+REGION+'.digitaloceanspaces.com',
-                    aws_access_key_id=ACCESS_ID,
-                    aws_secret_access_key=SECRET_KEY)
-
-#secrets/env
-userJira = "production@antidote.com.au"
-keyJira = "DQoADgLH6p1KaatHWGyQ909C"
-
-dbAppkey = "6ujo80qcw6sy4zk"
-dbAppSecret = "ush0ui2khvjgj92"
-dbAccessToken = "Gpw-anEq8LcAAAAAAAAAAfYIj9oInmdE8Tk0h0Vtns25OF9xjkUAiYOJ5VeE1hn1"
-
-jiraNewFileDirectory = "jiraticketsnew"
-processedFileDirectory = "jiraticketsprocessed"
-
-heartbeatUrl = "abc"
-
 spaces_name = "antidote-jira-metadata-store"
 spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
-workerThread = threading.Thread()
+s3sesseion = session.Session()
 
+def getS3Resource() :
+    return  s3sesseion.resource('s3',
+                    region_name=spaces_region,
+                    endpoint_url='https://'+spaces_region+'.digitaloceanspaces.com',
+                    aws_access_key_id=ACCESS_ID,
+                    aws_secret_access_key=SECRET_KEY)
+
+
+jiraNewFileDirectory = "jiraticketsnew"
 
 @dataclass
 class JiraAttachment:
@@ -56,7 +42,7 @@ def SendHeartBeat(url):
 ##### WORKER THREAD LOOP
 # Everything after this will go into a worker in a thread. 
 def ProcessNewTickets():
-    ClearTempDirectory()
+    result = False
 
     filenames = list_files(spaces_name, jiraNewFileDirectory)
 
@@ -65,27 +51,23 @@ def ProcessNewTickets():
         download_file(spaces_name, filename)
 
         with open(filename) as ticket:
-            result = processJiraAttachments( json.loads( ticket.read() ) )
+            result = processJiraCreated( json.loads( ticket.read() ) )
 
             if(result): #move file if successfull
                 timeStr = datetime.now().strftime("%m%d%Y%H%M%S")
 
                 leafFileName = path_leaf(filename)
-                upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + leafFileName)
+                spaces.upload_file(spaces_name, spaces_region,ticket, processedFileDirectory + "/" + timeStr + leafFileName)
 
-                delete_file(spaces_name, filename)
+                spaces.delete_file(spaces_name, spaces_region, filename)
 
-        os.remove(filename) #remove the local file
-
-def ClearTempDirectory():
-    if os.path.exists("./"+ jiraNewFileDirectory):
-        shutil.rmtree("./"+jiraNewFileDirectory) #clear the current holding directory
+                os.remove(filename) #remove the local file
 
 def path_leaf(path):
     return os.path.split(path)[1]
 
 #Orchestrator
-def processJiraAttachments(jiraMetaData):
+def processJiraCreated(jiraMetaData):
     print ('ProcessJira')
     restultInfo = ""
     attachments = extractJiraAttachmentsFromMetadata(jiraMetaData)
@@ -109,12 +91,12 @@ def pushToDropBox(jiraAttachment):
 #Jira 
 def getJiraAttachment(attachmentMetadata):
     print('GET ' + attachmentMetadata.url )
-    data = httpGetAuth(attachmentMetadata.url, userJira, keyJira)
+    data = httpGet(attachmentMetadata.url, userJira, keyJira)
     attachmentMetadata.fileRaw = data.content
     print('GET ' + attachmentMetadata.url + " OK!")
     return attachmentMetadata
 
-def httpGetAuth(url, username, password):
+def httpGet(url, username, password):
     r = requests.get(url, auth=(username,password))
     r.raise_for_status() 
     return r
@@ -213,8 +195,8 @@ def dbUploadBytes(
 
 
 def list_files( space_name, directory):
-    
-    bucket = s3resource.Bucket(name=space_name)
+    s3  = getS3Resource()
+    bucket = s3.Bucket(name=space_name)
     results = []
     
     for obj in bucket.objects.all():
@@ -224,8 +206,9 @@ def list_files( space_name, directory):
     return  filtered
 
 def download_file(space_name, file_name):
+    s3  = getS3Resource()
     try:
-        s3resource.Bucket(space_name).download_file(file_name, file_name)
+        s3.Bucket(space_name).download_file(SECRET_KEY, file_name)
         message = "Success"
         return message
         # pass
@@ -233,29 +216,6 @@ def download_file(space_name, file_name):
         message = "Error occured downloading file " + file_name + " " + str(e)
 
     return message
-
-def upload_file(space_name, local_file, upload_name):
-    try:
-        s3resource.meta.client.upload_file(local_file, space_name, upload_name)
-        message = "Success"
-        return message
-        # pass
-    except Exception as e:
-        message = "Error occured uloading file " + upload_name + " " + str(e)
-
-    return message
-
-def delete_file(space_name, file_name):
-    try:
-        s3resource.Object(space_name, file_name).delete()
-        message = "Success"
-        return message
-        # pass
-    except Exception as e:
-        message = "Error occured deleting file " + file_name + " " + str(e)
-
-    return message
-   
 
 #main Loop
 def run_job():
@@ -274,4 +234,3 @@ def run_job():
 if ( workerThread.is_alive() == False): #start/restart the worker
     thread = threading.Thread(target=run_job)
     thread.start() 
-    thread.join()
