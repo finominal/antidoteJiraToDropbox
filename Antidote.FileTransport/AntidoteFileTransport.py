@@ -55,24 +55,32 @@ def SendHeartBeat(url):
 ##### WORKER THREAD LOOP
 # Everything after this will go into a worker in a thread. 
 def ProcessNewTickets():
+
     PrepareTempDirectory() #create/clear
 
     filenames = s3_list_files(spaces_name, jiraNewFileDirectory)
 
     for filename in filenames:
         print("Retrieving " + filename)
-        s3_download_file(spaces_name, filename)
+        try:
+            s3_download_file(spaces_name, filename)
 
-        with open(filename) as ticket:
-            result = processJiraAttachments( json.loads( ticket.read() ) )
+            with open(filename) as ticket:
+            
+                content = ticket.read()
+                jsonContent = json.loads( content )
+                result = processJiraAttachments( jsonContent )
 
-            if(result): #move file if successfull
-                timeStr = datetime.now().strftime("%Y%m%d%H%M%S")
+                if(result): #move file if successfull
+                    timeStr = datetime.now().strftime("%Y%m%d%H%M%S")
 
-                leafFileName = path_leaf(filename)
-                s3_upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + "_" +  leafFileName) 
+                    leafFileName = path_leaf(filename)
+                    s3_upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + "_" +  leafFileName) 
 
-                s3_delete_file(spaces_name, filename)
+                    s3_delete_file(spaces_name, filename)
+        except Exception as e :
+            print("Exception opening file " + filename + " Deleting file. EXCEPTION " + str(e))
+            s3_delete_file(spaces_name, filename)
 
         os.remove(filename) #remove the local file
 
@@ -167,7 +175,8 @@ def dbUploadBytes(
 
     if file_size <= chunk_size:
         print("Small File - Direct Upload")
-        print(dbx.files_upload(file.read(), target_path))
+         
+        print(dbx.files_upload(file, target_path))
     else: 
         print("Large file = Session Upload")
         location = 0
