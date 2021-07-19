@@ -36,7 +36,7 @@ processedFileDirectory = "jiraticketsprocessed"
 heartbeatUrl = "abc"
 
 spaces_name = "antidote-jira-metadata-store"
-spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
+spaces_region = "sfo3"
 
 workerThread = threading.Thread()
 
@@ -71,7 +71,7 @@ def ProcessNewTickets():
                 timeStr = datetime.now().strftime("%m%d%Y%H%M%S")
 
                 leafFileName = path_leaf(filename)
-                upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + leafFileName)
+                upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + "_"+ leafFileName)
 
                 delete_file(spaces_name, filename)
 
