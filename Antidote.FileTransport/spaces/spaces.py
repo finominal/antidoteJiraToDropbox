@@ -22,8 +22,7 @@ key_id = str("THJ2HKRSFAH6RTJ6W43O")
 #your secret key
 secret_access_key = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
 
-
-regions = ['ams3', 'nyc3', 'sgp1', 'sfo2']
+regions = ['ams3', 'nyc3', 'sgp1', 'sfo']
 
 def space_connect(region_name):
     session = boto3.session.Session()
@@ -66,10 +65,12 @@ def list_spaces_in(region):
     else:
         return "Error: Possibly Invalid Region"
 
+
 def list_files(region_name, space_name, dir):
     #take argument for particular directory file listing
     #Put a try:
-    r = space_connect(region_name).list_objects(Bucket=space_name)
+    s = space_connect(region_name)
+    r = s.list_objects(Bucket=space_name)
     files = r.get('Contents')
     i = 0
     p = str(files)
@@ -162,6 +163,20 @@ def encrypted_upload(space_name, region_name, local_file, upload_name, key):
         return "Success"
     else:
         return "Error"
+
+
+def delete_file(space_name, region_name, file_name):
+    s3 = space_connect(region_name)
+    try:
+        s3.delete_object(Bucket=space_name, Key=file_name)
+        message = "Success"
+        return message
+        # pass
+    except Exception as e:
+        message = "Error occured deleting FILE " + file_name + " EXCEPTION:" + e.__str__
+
+    return message
+
 
 # key = create_key("password")
 # encrypted_upload("my-space-name","sfo2","test.txt","testers", key)

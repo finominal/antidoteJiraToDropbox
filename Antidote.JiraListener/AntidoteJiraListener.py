@@ -13,8 +13,8 @@ app.config["DEBUG"] = False
 userJira = "production@antidote.com.au"
 keyJira = "DQoADgLH6p1KaatHWGyQ909C"
 
-space_name = "antidote-jira-metadata-store"
-space_region = "sfo3" #"sfo3.digitaloceanspaces.com"
+spaces_name = "antidote-jira-metadata-store"
+spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
 jiraFileDirectory = "jiraticketsnew"
 
@@ -42,10 +42,14 @@ def heathcheck():
 
 #Helpers
 def PersistRequstData(requestData, ticketNo):
+
     uploadFilename = jiraFileDirectory + "/" + ticketNo + ".json"
     localFilename  = "./" + uploadFilename
+
     open(localFilename, "wb").write(requestData) #stream to file
-    result = spaces.upload_file(space_name, space_region, localFilename, uploadFilename)
+
+    result = spaces.upload_file(spaces_name, spaces_region, localFilename, uploadFilename)
+
     if result == "Success":
         os.remove(localFilename)
 

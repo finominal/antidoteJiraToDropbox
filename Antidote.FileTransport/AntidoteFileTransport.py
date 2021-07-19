@@ -6,26 +6,39 @@ import sys
 import threading
 import time
 import logging
-import spaces
-from os import walk
+from spaces import spaces
 from dataclasses import dataclass
 from datetime import datetime
+from boto3 import session
+from botocore.client import Config
+from boto3.s3.transfer import S3Transfer
 
+ACCESS_ID = str("THJ2HKRSFAH6RTJ6W43O")
+SECRET_KEY = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
+REGION = str("sfo3")
 
-#from util.utils import get_keyvault_secret
+s3sesseion = session.Session()
+s3resource = s3sesseion.resource('s3',
+                        region_name=REGION,
+                        endpoint_url='https://'+REGION+'.digitaloceanspaces.com',
+                        aws_access_key_id=ACCESS_ID,
+                        aws_secret_access_key=SECRET_KEY)
 
 #secrets/env
 userJira = "production@antidote.com.au"
 keyJira = "DQoADgLH6p1KaatHWGyQ909C"
+
 dbAppkey = "6ujo80qcw6sy4zk"
 dbAppSecret = "ush0ui2khvjgj92"
 dbAccessToken = "Gpw-anEq8LcAAAAAAAAAAfYIj9oInmdE8Tk0h0Vtns25OF9xjkUAiYOJ5VeE1hn1"
 
-fileCacheDir = "./fileCache/"
+jiraNewFileDirectory = "jiraticketsnew"
+processedFileDirectory = "jiraticketsprocessed"
 
-jiraFileDirectory = "./jiraticketsnew"
-processedFileDirectory = "./jiraticketsprocessed"
 heartbeatUrl = "abc"
+
+spaces_name = "antidote-jira-metadata-store"
+spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
 workerThread = threading.Thread()
 
@@ -37,12 +50,6 @@ class JiraAttachment:
     fileRaw: bytes
     expectedSize: int
 
-#digital ocean 
-#mart@antidote.com.au: #y47GatcNMq3iyan
-#https://antidotebiomedical.atlassian.net/browse/AB-74
-# production@antidote.com.au|DQoADgLH6p1KaatHWGyQ909C
-#jira token header https://developer.atlassian.com/server/jira/platform/basic-authentication/
-
 def SendHeartBeat(url):
     #httpGet(url)
     print(" SentHeartbeat")
@@ -51,16 +58,29 @@ def SendHeartBeat(url):
 # Everything after this will go into a worker in a thread. 
 def ProcessNewTickets():
     result = False
-    filenames = next(walk(jiraFileDirectory), (None, None, []))[2]  # [] if no file
 
-    for filename in  filenames:
-        fullFileName =  jiraFileDirectory + "/" + filename
-        print("Opening " + fullFileName)
-        with open(fullFileName) as ticket:
-            result = processJiraCreated( json.loads(ticket.read()))
-        if(result): #move file if successfull
-            timeStr = datetime.now().strftime("%m%d%Y%H%M%S")
-            os.rename(jiraFileDirectory +"/"+ filename, processedFileDirectory +"/"+ timeStr +"_" + filename)
+    #filenames = next(walk(jiraFileDirectory), (None, None, []))[2]  # [] if no file
+    filenames = list_files( spaces_name, jiraNewFileDirectory)
+
+    for filename in filenames:
+        print("Retrieving " + filename)
+        download_file(spaces_name, filename)
+
+        with open(filename) as ticket:
+            result = processJiraCreated( json.loads( ticket.read() ) )
+
+            if(result): #move file if successfull
+                timeStr = datetime.now().strftime("%m%d%Y%H%M%S")
+
+                leafFileName = path_leaf(filename)
+                spaces.upload_file(spaces_name, spaces_region,ticket, processedFileDirectory + "/" + timeStr + leafFileName)
+
+                spaces.delete_file(spaces_name, spaces_region, filename)
+
+                os.remove(filename) #remove the local file
+
+def path_leaf(path):
+    return os.path.split(path)[1]
 
 #Orchestrator
 def processJiraCreated(jiraMetaData):
@@ -143,7 +163,7 @@ def dbUploadBytes(
     if file_size <= chunk_size:
         print("Small File - Direct Upload")
         print(dbx.files_upload(file.read(), target_path))
-    else:
+    else: 
         print("Large file = Session Upload")
         location = 0
         upload_session_start_result = dbx.files_upload_session_start(
@@ -180,18 +200,47 @@ def dbUploadBytes(
             cursor.offset = location
 
 #Helpers
-def createDirectories():
-    #Create save directory 
-    if(not os.path.isdir(jiraFileDirectory)):
-        os.mkdir(jiraFileDirectory)
+# def createDirectories():
+#     #Create save directory 
+#     if(not os.path.isdir(jiraNewFileDirectory)):
+#         os.mkdir(jiraNewFileDirectory)
 
-    #Create processed directory
-    if(not os.path.isdir(processedFileDirectory)):
-        os.mkdir(processedFileDirectory)
+#     #Create processed directory
+#     if(not os.path.isdir(processedFileDirectory)):
+#         os.mkdir(processedFileDirectory)
 
+
+def list_files( space_name, directory):
+    bucket = s3resource.Bucket(name=space_name)
+    results = []
+    
+    for obj in bucket.objects.all():
+        results.append(obj.key)
+
+    filtered = list(filter(lambda k: directory in k, results))
+    return  filtered
+
+def download_file(space_name, file_name):
+    s3resource.Object(space_name, file_name).download_file(
+    f'/tmp/{file_name}') # Python 3.6+
+
+def upload_file(space_name, local_file, upload_name):
+    try:
+        s3resource.upload_file(local_file, space_name, upload_name)
+        message = "Success"
+        return message
+        # pass
+    except Exception as e:
+        message = "Error occured. Check Space name, etc"
+
+    return message
+    #upload_file('my-space-name', 'sfo2', 'test.txt', 'me1.txt')
+
+
+#main Loop
 def run_job():
-    createDirectories()
-    while True:
+    #createDirectories()
+    while True: 
         try:
             print("Worker running: " + datetime.utcnow().strftime('%B %d %Y - %H:%M:%S'))
             SendHeartBeat(heartbeatUrl)
