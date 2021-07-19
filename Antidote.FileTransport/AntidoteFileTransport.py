@@ -230,10 +230,6 @@ def download_file(space_name, file_name):
         message = "Error occured downloading file " + file_name + " " + str(e)
 
     return message
-    #upload_file('my-space-name', 'sfo2', 'test.txt', 'me1.txt')
-
-
-
 
 #main Loop
 def run_job():

@@ -7,14 +7,15 @@ from flask import request
 
 ACCESS_ID = str("THJ2HKRSFAH6RTJ6W43O")
 SECRET_KEY = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
-REGION = str("sfo3")
+spaces_name = "antidote-jira-metadata-store"
+spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
 s3sesseion = session.Session()
 
 def getS3Resource() :
     return  s3sesseion.resource('s3',
-                    region_name=REGION,
-                    endpoint_url='https://'+REGION+'.digitaloceanspaces.com',
+                    region_name=spaces_region,
+                    endpoint_url='https://'+spaces_region+'.digitaloceanspaces.com',
                     aws_access_key_id=ACCESS_ID,
                     aws_secret_access_key=SECRET_KEY)
 
@@ -25,8 +26,6 @@ app.config["DEBUG"] = False
 userJira = "production@antidote.com.au"
 keyJira = "DQoADgLH6p1KaatHWGyQ909C"
 
-spaces_name = "antidote-jira-metadata-store"
-spaces_region = "sfo3" #"sfo3.digitaloceanspaces.com"
 
 jiraFileDirectory = "jiraticketsnew"
 
@@ -60,7 +59,7 @@ def PersistRequstData(requestData, ticketNo):
 
     open(localFilename, "wb").write(requestData) #stream to file
 
-    result = upload_file(spaces_name, spaces_region, localFilename, uploadFilename)
+    result = upload_file(spaces_name, localFilename, uploadFilename)
 
     if result == "Success":
         os.remove(localFilename)
@@ -73,7 +72,7 @@ def createDirectories():
 def upload_file(space_name, local_file, upload_name):
     s3  = getS3Resource()
     try:
-        s3.upload_file(local_file, space_name, upload_name)
+        s3.meta.client.upload_file(local_file, space_name, upload_name)
         message = "Success"
         return message
         # pass
