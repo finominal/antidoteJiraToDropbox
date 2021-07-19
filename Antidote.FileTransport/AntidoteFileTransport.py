@@ -18,11 +18,13 @@ SECRET_KEY = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
 REGION = str("sfo3")
 
 s3sesseion = session.Session()
-s3resource = s3sesseion.resource('s3',
-                        region_name=REGION,
-                        endpoint_url='https://'+REGION+'.digitaloceanspaces.com',
-                        aws_access_key_id=ACCESS_ID,
-                        aws_secret_access_key=SECRET_KEY)
+
+def getS3Resource() :
+    return  s3sesseion.resource('s3',
+                    region_name=REGION,
+                    endpoint_url='https://'+REGION+'.digitaloceanspaces.com',
+                    aws_access_key_id=ACCESS_ID,
+                    aws_secret_access_key=SECRET_KEY)
 
 #secrets/env
 userJira = "production@antidote.com.au"
@@ -59,8 +61,7 @@ def SendHeartBeat(url):
 def ProcessNewTickets():
     result = False
 
-    #filenames = next(walk(jiraFileDirectory), (None, None, []))[2]  # [] if no file
-    filenames = list_files( spaces_name, jiraNewFileDirectory)
+    filenames = list_files(spaces_name, jiraNewFileDirectory)
 
     for filename in filenames:
         print("Retrieving " + filename)
@@ -211,7 +212,8 @@ def dbUploadBytes(
 
 
 def list_files( space_name, directory):
-    bucket = s3resource.Bucket(name=space_name)
+    s3  = getS3Resource()
+    bucket = s3.Bucket(name=space_name)
     results = []
     
     for obj in bucket.objects.all():
@@ -221,17 +223,28 @@ def list_files( space_name, directory):
     return  filtered
 
 def download_file(space_name, file_name):
-    s3resource.Object(space_name, file_name).download_file(
-    f'/tmp/{file_name}') # Python 3.6+
-
-def upload_file(space_name, local_file, upload_name):
+    s3  = getS3Resource()
     try:
-        s3resource.upload_file(local_file, space_name, upload_name)
+        s3.Bucket(space_name).download_file(SECRET_KEY, file_name)
         message = "Success"
         return message
         # pass
     except Exception as e:
-        message = "Error occured. Check Space name, etc"
+        message = "Error occured downloading file " + file_name + " " + str(e)
+
+    return message
+    #upload_file('my-space-name', 'sfo2', 'test.txt', 'me1.txt')
+
+
+def upload_file(space_name, local_file, upload_name):
+    s3  = getS3Resource()
+    try:
+        s3.upload_file(local_file, space_name, upload_name)
+        message = "Success"
+        return message
+        # pass
+    except Exception as e:
+        message = "Error occured uloading file " + upload_name + " " + str(e)
 
     return message
     #upload_file('my-space-name', 'sfo2', 'test.txt', 'me1.txt')
