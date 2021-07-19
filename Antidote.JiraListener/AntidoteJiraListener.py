@@ -85,5 +85,4 @@ def upload_file(space_name, local_file, upload_name):
 
 
 # Lets Go!
-#app.run(host="0.0.0.0", port=8080)
-app.run(host="127.0.0.1", port=8080)
+app.run(host="0.0.0.0", port=8080)

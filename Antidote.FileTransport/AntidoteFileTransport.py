@@ -6,12 +6,9 @@ import sys
 import threading
 import time
 import logging
-from spaces import spaces
 from dataclasses import dataclass
 from datetime import datetime
 from boto3 import session
-from botocore.client import Config
-from boto3.s3.transfer import S3Transfer
 
 ACCESS_ID = str("THJ2HKRSFAH6RTJ6W43O")
 SECRET_KEY = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
@@ -236,18 +233,6 @@ def download_file(space_name, file_name):
     #upload_file('my-space-name', 'sfo2', 'test.txt', 'me1.txt')
 
 
-def upload_file(space_name, local_file, upload_name):
-    s3  = getS3Resource()
-    try:
-        s3.upload_file(local_file, space_name, upload_name)
-        message = "Success"
-        return message
-        # pass
-    except Exception as e:
-        message = "Error occured uloading file " + upload_name + " " + str(e)
-
-    return message
-    #upload_file('my-space-name', 'sfo2', 'test.txt', 'me1.txt')
 
 
 #main Loop
