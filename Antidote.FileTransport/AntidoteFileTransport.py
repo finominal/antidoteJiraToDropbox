@@ -86,7 +86,7 @@ def ProcessNewTickets():
                     s3_delete_file(spaces_name, filename)
 
         except Exception as e :
-            print("Exception opening file " + filename + " Deleting file. EXCEPTION " + str(e))
+            print("Exception protocessing ticket " + filename + " Deleting this webhook notice. EXCEPTION " + str(e))
             s3_delete_file(spaces_name, filename)
 
         os.remove(filename) #remove the local file
