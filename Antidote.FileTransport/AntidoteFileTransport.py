@@ -37,6 +37,8 @@ heartbeatUrl = "abc"
 spaces_name = "antidote-jira-metadata-store"
 spaces_region = "sfo3"
 
+destinationRoot = "/Production/Orders"
+
 workerThread = threading.Thread()
 
 
@@ -47,6 +49,12 @@ class JiraAttachment:
     url: str
     fileRaw: bytes
     expectedSize: int
+    issueType: str
+    summary: str
+
+    def getDestinationFilename(self) -> str:
+        return  "/" + self.issueType + "/" + self.ticketNumber + "_" + self.summary + "/" + self.filename
+
 
 def SendHeartBeat(url):
     #httpGet(url)
@@ -73,11 +81,10 @@ def ProcessNewTickets():
 
                 if(result): #move file if successfull
                     timeStr = datetime.now().strftime("%Y%m%d%H%M%S")
-
                     leafFileName = path_leaf(filename)
                     s3_upload_file(spaces_name, filename, processedFileDirectory + "/" + timeStr + "_" +  leafFileName) 
-
                     s3_delete_file(spaces_name, filename)
+
         except Exception as e :
             print("Exception opening file " + filename + " Deleting file. EXCEPTION " + str(e))
             s3_delete_file(spaces_name, filename)
@@ -102,19 +109,20 @@ def processJiraAttachments(jiraMetaData):
     attachments = extractJiraAttachmentsFromMetadata(jiraMetaData)
     for attachment in attachments:
 
-        if(not dbFileExists( attachment.ticketNumber, attachment.filename )): #already uploaded?
+        if(not dbFileExists( attachment)): #already uploaded?
             a = getJiraAttachment(attachment) #download attachment from Jira
             pushToDropBox(a) 
-            restultInfo += "Uploaded " + attachment.ticketNumber + "/" + a.filename + " | "
+            restultInfo += "Uploaded " + a.getDestinationFilename() + " | "
         else:
-            restultInfo += "File exists " + attachment.ticketNumber + "/" + attachment.filename  + " | "
+            restultInfo += "File exists " + attachment.getDestinationFilename() + " | "
+    
     restultInfo += "Completed!"
     print(restultInfo)
     #result into to log file?
     return True
 
 def pushToDropBox(jiraAttachment):
-    destinationPath = "/" + jiraAttachment.ticketNumber + "/" + jiraAttachment.filename
+    destinationPath = destinationRoot + jiraAttachment.getDestinationFilename()
     dbUploadBytes(dbAccessToken, jiraAttachment.fileRaw, destinationPath)
 
 #Jira 
@@ -139,7 +147,7 @@ def extractJiraAttachmentsFromMetadata(jiraData):
     results = []
     ticketNo = jiraData["key"]
     for attachment in jiraData["fields"]["attachment"]:
-        results.append( JiraAttachment( ticketNo, attachment["filename"], attachment["content"], None ,attachment["size"] ) )
+        results.append( JiraAttachment( ticketNo, attachment["filename"], attachment["content"], None ,attachment["size"], jiraData["fields"]["issuetype"]["name"], jiraData["fields"]["summary"]) )
         print('extractJiraAttachmentMetadata ' + attachment["content"])
     return results
 
@@ -147,15 +155,18 @@ def extractJiraAttachmentsFromMetadata(jiraData):
 #https://dropbox-sdk-python.readthedocs.io/en/latest/api/dropbox.html?highlight=upload#dropbox.dropbox_client.Dropbox.files_upload_session_start
 
 #doesFileExist
-def dbFileExists(directory, filename):
-    root = "" 
-    file = "/" + directory + "/" + filename
+def dbFileExists(attachment):
+    filename = attachment.getDestinationFilename()
     with dropbox.Dropbox(dbAccessToken, 30) as dbx:
-        results = dbx.files_search(root,filename)
-        if len(results.matches) > 0:
-                for match in results.matches:
-                    if match.metadata.path_display == file:
-                        return True
+        try:
+            results = dbx.files_search(destinationRoot,filename)
+            if len(results.matches) > 0:
+                    for match in results.matches:
+                        if match.metadata.path_display == attachment.fileName:
+                            return True
+        except Exception as e:
+            print("Catch - Directory does not exist?")
+            
     return False
 
 #upload bytes
