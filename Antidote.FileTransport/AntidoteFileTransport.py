@@ -37,7 +37,7 @@ heartbeatUrl = "abc"
 spaces_name = "antidote-jira-metadata-store"
 spaces_region = "sfo3"
 
-destinationRoot = "/Production/Orders"
+destinationRoot = "/Production Antidote/ORDERS"
 
 workerThread = threading.Thread()
 
