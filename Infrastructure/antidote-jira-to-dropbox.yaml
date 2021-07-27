@@ -3,7 +3,7 @@ region: sfo
 services:
 - environment_slug: python
   github:
-    branch: feature/develop
+    branch: develop
     deploy_on_push: true
     repo: finominal/antidoteJiraToDropbox
   health_check:
@@ -19,7 +19,7 @@ services:
 workers:
 - environment_slug: python
   github:
-    branch: feature/develop
+    branch: develop
     deploy_on_push: true
     repo: finominal/antidoteJiraToDropbox
   instance_count: 1

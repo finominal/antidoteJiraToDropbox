@@ -156,16 +156,17 @@ def extractJiraAttachmentsFromMetadata(jiraData):
 
 #doesFileExist
 def dbFileExists(attachment):
-    filename = attachment.getDestinationFilename()
+    root = ""
+    filename = destinationRoot + attachment.getDestinationFilename()
     with dropbox.Dropbox(dbAccessToken, 30) as dbx:
         try:
-            results = dbx.files_search(destinationRoot,filename)
+            results = dbx.files_search(root,filename)
             if len(results.matches) > 0:
                     for match in results.matches:
                         if match.metadata.path_display == attachment.fileName:
                             return True
         except Exception as e:
-            print("Catch - Directory does not exist?")
+            print("Catch - Directory does not exist? " + str(e))
             
     return False
 
