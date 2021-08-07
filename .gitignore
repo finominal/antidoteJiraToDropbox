@@ -36,3 +36,4 @@ packages/
 /.vscode/launch.json
 /Antidote.FileTransport/~/*
 /jiraticketsprocessed/*
+/Infrastructure/envVars.ps1
