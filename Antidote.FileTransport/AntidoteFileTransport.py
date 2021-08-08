@@ -10,34 +10,29 @@ from dataclasses import dataclass
 from datetime import datetime
 from boto3 import session
 
-ACCESS_ID = str("THJ2HKRSFAH6RTJ6W43O")
-SECRET_KEY = str("NWgzBh1kBJqgGyJL99AZ0tI8HjGryPRyw4CRm8OwLYY")
-REGION = str("sfo3")
+S3_ACCESS_KEY = os.getenv("S3_ACCESS_KEY") 
+S3_SECRET_KEY = os.getenv("S3_SECRET_KEY") 
+SPACES_NAME = os.getenv("SPACES_NAME")  
+SPACES_REGION = os.getenv("SPACES_REGION") 
 
 s3sesseion = session.Session()
 s3resource = s3sesseion.resource('s3',
-                    region_name=REGION,
-                    endpoint_url='https://'+REGION+'.digitaloceanspaces.com',
-                    aws_access_key_id=ACCESS_ID,
-                    aws_secret_access_key=SECRET_KEY)
+                    region_name=SPACES_REGION,
+                    endpoint_url='https://'+SPACES_REGION+'.digitaloceanspaces.com',
+                    aws_access_key_id=S3_ACCESS_KEY,
+                    aws_secret_access_key=S3_SECRET_KEY)
 
 #secrets/env
-userJira = "production@antidote.com.au"
-keyJira = "DQoADgLH6p1KaatHWGyQ909C"
-
-dbAppkey = "6ujo80qcw6sy4zk"
-dbAppSecret = "ush0ui2khvjgj92"
-dbAccessToken = "Gpw-anEq8LcAAAAAAAAAAfYIj9oInmdE8Tk0h0Vtns25OF9xjkUAiYOJ5VeE1hn1" 
-
-jiraNewFileDirectory = "jiraticketsnew"
-processedFileDirectory = "jiraticketsprocessed"
+userJira = os.getenv("JIRA_USER") 
+keyJira = os.getenv("JIRA_KEY") 
+dbAccessToken = os.getenv("DB_ACCESS_TOKEN") 
+spaces_name = os.getenv("SPACES_NAME") 
+spaces_region = os.getenv("SPACES_REGION") 
+jiraNewFileDirectory = os.getenv("DIR_JIRA_NEW") 
+processedFileDirectory = os.getenv("DIR_JIRA_PROCESSED") 
+destinationRoot = os.getenv("DB_DESTINATION_ROOT")  
 
 heartbeatUrl = "abc"
-
-spaces_name = "antidote-jira-metadata-store"
-spaces_region = "sfo3"
-
-destinationRoot = "/Production Antidote/ORDERS"
 
 workerThread = threading.Thread()
 
