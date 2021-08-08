@@ -27,7 +27,7 @@ keyJira = "DQoADgLH6p1KaatHWGyQ909C"
 
 dbAppkey = "6ujo80qcw6sy4zk"
 dbAppSecret = "ush0ui2khvjgj92"
-dbAccessToken = "Gpw-anEq8LcAAAAAAAAAAfYIj9oInmdE8Tk0h0Vtns25OF9xjkUAiYOJ5VeE1hn1"
+dbAccessToken = "Gpw-anEq8LcAAAAAAAAAAfYIj9oInmdE8Tk0h0Vtns25OF9xjkUAiYOJ5VeE1hn1" 
 
 jiraNewFileDirectory = "jiraticketsnew"
 processedFileDirectory = "jiraticketsprocessed"

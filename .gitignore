@@ -37,3 +37,5 @@ packages/
 /Antidote.FileTransport/~/*
 /jiraticketsprocessed/*
 /Infrastructure/envVars.ps1
+/Infrastructure/envVars.dev.ps1
+/Infrastructure/envVars.prod.ps1
