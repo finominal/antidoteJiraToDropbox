@@ -123,6 +123,7 @@ def pushToDropBox(jiraAttachment):
 #Jira 
 def getJiraAttachment(attachmentMetadata):
     print('GET ' + attachmentMetadata.url )
+    print('Expected Size ' + attachmentMetadata.expectedSize )
     data = httpGetAuth(attachmentMetadata.url, userJira, keyJira)
     attachmentMetadata.fileRaw = data.content
     print('GET ' + attachmentMetadata.url + " OK!")
