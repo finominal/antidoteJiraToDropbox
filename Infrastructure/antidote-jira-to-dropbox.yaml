@@ -1,0 +1,29 @@
+name: antidote-jira-to-dropbox
+region: sfo
+services:
+- environment_slug: python
+  github:
+    branch: develop
+    deploy_on_push: true
+    repo: finominal/antidoteJiraToDropbox
+  health_check:
+    http_path: /healthcheck
+  http_port: 8080
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  name: antidote-jira-to-dropbox
+  routes:
+  - path: /
+  run_command: python AntidoteJiraListener.py
+  source_dir: /Antidote.JiraListener
+workers:
+- environment_slug: python
+  github:
+    branch: develop
+    deploy_on_push: true
+    repo: finominal/antidoteJiraToDropbox
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  name: antidote-file-transport
+  run_command: python AntidoteFileTransport.py
+  source_dir: /Antidote.FileTransport
