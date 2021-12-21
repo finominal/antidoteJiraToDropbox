@@ -34,6 +34,8 @@ destinationRoot = os.getenv("DB_DESTINATION_ROOT")
 
 heartbeatUrl = "abc"
 
+chunk_size = 4 * 1024 * 1024
+
 workerThread = threading.Thread()
 
 
@@ -178,7 +180,6 @@ def dbUploadBytes(
     print("Dropbox Handler Initiated")
 
     file_size = sys.getsizeof(file)
-    chunk_size = 4 * 1024 * 1024
     print("Upload to Dropbox: " + target_path + " Size:" + str(file_size) )
 
     if file_size <= chunk_size:
