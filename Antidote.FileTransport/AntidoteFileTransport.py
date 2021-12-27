@@ -52,7 +52,7 @@ class JiraAttachment:
     summary: str
 
     def getDestinationFilename(self) -> str:
-        return  "/" + self.issueType + "/" + self.ticketNumber + "_" + self.summary + "/" + self.filename
+        return  "/" + self.issueType.strip() + "/" + self.ticketNumber + "_" + self.summary.strip() + "/" + self.filename.strip()
 
 
 def SendHeartBeat(url):
@@ -127,7 +127,7 @@ def pushToDropBox(jiraAttachment):
 #Jira 
 def getJiraAttachment(attachmentMetadata):
     print('GET ' + attachmentMetadata.url )
-    print('Expected Size ' + attachmentMetadata.expectedSize )
+    print('Expected Size ' + str(attachmentMetadata.expectedSize) )
     data = httpGetAuth(attachmentMetadata.url, userJira, keyJira)
     attachmentMetadata.fileRaw = data.content
     print('GET ' + attachmentMetadata.url + " OK!")
@@ -179,8 +179,9 @@ def dbUploadBytes(
     chunk_size=chunk_size_antidote,
 ):
     dbx = dropbox.Dropbox(access_token, timeout=timeout)
-    print("Dropbox Handler Initiated")
+    print("Dropbox Upload Initiated")
     print("Chunk size - " + str(chunk_size_antidote))
+    print("target_path: "+ target_path)
 
     file_size = sys.getsizeof(file)
     print("Upload to Dropbox: " + target_path + " Size:" + str(file_size) )
