@@ -36,7 +36,6 @@ chunkSize = int(os.getenv("UPLOAD_CHUNK_SIZE_MB"))
 heartbeatUrl = "abc"
 
 chunk_size_antidote = chunkSize * 1024 * 1024 
-print("Var Chunk size - " + str(chunkSize))
 workerThread = threading.Thread()
 
 
@@ -126,7 +125,7 @@ def pushToDropBox(jiraAttachment):
 #Jira 
 def getJiraAttachment(attachmentMetadata):
     print('GET ' + attachmentMetadata.url )
-    print('Expected Size ' + attachmentMetadata.expectedSize )
+    print('Expected Size ' + str(attachmentMetadata.expectedSize) )
     data = httpGetAuth(attachmentMetadata.url, userJira, keyJira)
     attachmentMetadata.fileRaw = data.content
     print('GET ' + attachmentMetadata.url + " OK!")
@@ -179,7 +178,7 @@ def dbUploadBytes(
 ):
     dbx = dropbox.Dropbox(access_token, timeout=timeout)
     print("Dropbox Handler Initiated")
-    print("Chunk size - " + str(chunk_size_antidote))
+    print("Chunk size - " + str(chunk_size))
 
     file_size = sys.getsizeof(file)
     chunk_size = 4 * 1024 * 1024
