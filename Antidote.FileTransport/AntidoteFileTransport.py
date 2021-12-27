@@ -31,9 +31,12 @@ spaces_region = os.getenv("SPACES_REGION")
 jiraNewFileDirectory = os.getenv("DIR_JIRA_NEW") 
 processedFileDirectory = os.getenv("DIR_JIRA_PROCESSED") 
 destinationRoot = os.getenv("DB_DESTINATION_ROOT")  
+chunkSize = int(os.getenv("UPLOAD_CHUNK_SIZE_MB"))
 
 heartbeatUrl = "abc"
 
+chunk_size_antidote = chunkSize * 1024 * 1024 
+print("Var Chunk size - " + str(chunkSize))
 workerThread = threading.Thread()
 
 
@@ -172,10 +175,11 @@ def dbUploadBytes(
     file,
     target_path,
     timeout=900,
-    chunk_size=4 * 1024 * 1024,
+    chunk_size=chunk_size_antidote,
 ):
     dbx = dropbox.Dropbox(access_token, timeout=timeout)
     print("Dropbox Handler Initiated")
+    print("Chunk size - " + str(chunk_size_antidote))
 
     file_size = sys.getsizeof(file)
     chunk_size = 4 * 1024 * 1024
@@ -206,7 +210,7 @@ def dbUploadBytes(
             if (file_size - location) <= chunk_size:
                 print( "sessionFinished: " +
                     str(dbx.files_upload_session_finish(
-                        file[location:file_size - location], cursor, commit) #watch this for errors on closing file
+                        file[location:file_size - location - 1], cursor, commit) #watch this for errors on closing file
                         )
                 )
                 print("F Loction: " + str(location) )

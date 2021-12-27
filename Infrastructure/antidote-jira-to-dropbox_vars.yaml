@@ -1,0 +1,68 @@
+envs:
+- key: S3_ACCESS_KEY
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:vl/d13zzkEbZTHTgNB/EhR9b8BcLfApE:Gr5Rj4LcK8DdFMLKU9jggZoeJVkbobeBSlDtiS2ElpiIfA2H]
+- key: S3_SECRET_KEY
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:OxL1NHxofqTst7CwqoxofOYcnQ0KCZcK:1FxMoevYuaEV7vPuPybvFDa8DENtozx9TxV+qwjxDV+M8o0d635vaBwpMGx/mBmBHa1Xvag2rpajebI=]
+- key: JIRA_USER
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:Z1SLMkl0EhAU8SECfMYxXhj6uHiLplPc:ipTK8rwme1UCMK6SId6HFL2bW/sATbm+7KKx8u4F7uGJKwG7XmX/va/z]
+- key: JIRA_KEY
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:UG0sRinQs5cQ64f8eK0MqIA03TQpPaQS:p+sH/R7wA/v9UmPI5jAH99M+m6cWgEXQEHmE/kz3VUWY9sPJC6XBEg==]
+- key: SPACES_NAME
+  scope: RUN_AND_BUILD_TIME
+  value: antidote-jira-metadata-store
+- key: SPACES_REGION
+  scope: RUN_AND_BUILD_TIME
+  value: sfo3
+- key: DIR_JIRA_NEW
+  scope: RUN_AND_BUILD_TIME
+  value: jiraticketsnew
+- key: DIR_JIRA_PROCESSED
+  scope: RUN_AND_BUILD_TIME
+  value: jiraticketsprocessed
+- key: DB_DESTINATION_ROOT
+  scope: RUN_AND_BUILD_TIME
+  value: /ORDERS
+- key: DB_ACCESS_TOKEN
+  scope: RUN_AND_BUILD_TIME
+  type: SECRET
+  value: EV[1:wbZI43UzTBN7Qhz064DoedjbjpERWre6:lgqLkYSdAIxr8/mnM1yBAt9nubC1GkCQQMgwdRLlNWBZUUokiV9SF4Pv8pJFBkwi0NWawAD71f8WkiuD7+Xhp0TXBPQSvnh5BSF//o/oTPA=]
+- key: UPLOAD_CHUNK_SIZE_MB
+  scope: RUN_AND_BUILD_TIME
+  value: "120"
+name: antidote-jira-to-dropbox
+region: sfo
+services:
+- environment_slug: python
+  github:
+    branch: develop
+    deploy_on_push: true
+    repo: finominal/antidoteJiraToDropbox
+  health_check:
+    http_path: /healthcheck
+  http_port: 8080
+  instance_count: 1
+  instance_size_slug: professional-xs
+  name: antidote-jira-to-dropbox
+  routes:
+  - path: /
+  run_command: python AntidoteJiraListener.py
+  source_dir: /Antidote.JiraListener
+workers:
+- environment_slug: python
+  github:
+    branch: develop
+    deploy_on_push: true
+    repo: finominal/antidoteJiraToDropbox
+  instance_count: 1
+  instance_size_slug: professional-xs
+  name: antidote-file-transport
+  run_command: python AntidoteFileTransport.py
+  source_dir: /Antidote.FileTransport
