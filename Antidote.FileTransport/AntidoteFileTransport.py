@@ -181,7 +181,7 @@ def dbUploadBytes(
     print("Chunk size - " + str(chunk_size))
 
     file_size = sys.getsizeof(file)
-    chunk_size = 4 * 1024 * 1024
+    
     print("Upload to Dropbox: " + target_path + " Size:" + str(file_size) )
 
     if file_size <= chunk_size:
