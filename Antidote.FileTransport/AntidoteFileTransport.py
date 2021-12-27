@@ -50,7 +50,7 @@ class JiraAttachment:
     summary: str
 
     def getDestinationFilename(self) -> str:
-        return  "/" + self.issueType + "/" + self.ticketNumber + "_" + self.summary + "/" + self.filename
+        return  "/" + self.issueType.strip() + "/" + self.ticketNumber + "_" + self.summary.strip() + "/" + self.filename.strip()
 
 
 def SendHeartBeat(url):
