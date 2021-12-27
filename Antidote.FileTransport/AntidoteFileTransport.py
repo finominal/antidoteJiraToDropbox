@@ -177,11 +177,12 @@ def dbUploadBytes(
     chunk_size=chunk_size_antidote,
 ):
     dbx = dropbox.Dropbox(access_token, timeout=timeout)
-    print("Dropbox Handler Initiated")
+    print("Dropbox Upload Initiated")
     print("Chunk size - " + str(chunk_size))
+    print("target_path: "+ target_path)
 
     file_size = sys.getsizeof(file)
-    
+
     print("Upload to Dropbox: " + target_path + " Size:" + str(file_size) )
 
     if file_size <= chunk_size:
