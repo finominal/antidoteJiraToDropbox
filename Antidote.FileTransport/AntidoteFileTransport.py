@@ -195,10 +195,8 @@ def dbUploadBytes(
         print("Large file = Session Upload")
         location = 0
         upload_session_start_result = dbx.files_upload_session_start(
-            file[location:chunk_size]
+            file[location:location]
         )
-
-        location += chunk_size
 
         print("Session Started: " + upload_session_start_result.session_id)
         cursor = dropbox.files.UploadSessionCursor(
@@ -210,22 +208,23 @@ def dbUploadBytes(
 
         while location < file_size:
             if (file_size - location) <= chunk_size:
+                cursor.offset = file_size - location - 1
                 print( "sessionFinished: " +
                     str(dbx.files_upload_session_finish(
-                        file[location:file_size - 1], cursor, commit) #watch this for errors on closing file
+                        file[location:location], cursor, commit) #watch this for errors on closing file
                         )
                 )
                 print("F Loction: " + str(location) )
             else:
                 print("Append - cursor.offset " + str(cursor.offset))
                 dbx.files_upload_session_append( 
-                    file[location:location + chunk_size],
+                    file[location:location],
                     cursor.session_id,
                     cursor.offset,
                 )
-
+                
             location += chunk_size
-            cursor.offset = location
+            cursor.offset = location + chunk_size
 
 def s3_list_files( space_name, directory):
     
