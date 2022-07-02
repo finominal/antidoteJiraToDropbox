@@ -215,6 +215,7 @@ def dbUploadBytes(
                         )
                 )
                 print("F Loction: " + str(location) )
+                location = file_size #exit
             else:
                 print("Append - cursor.offset " + str(cursor.offset))
                 dbx.files_upload_session_append( 
@@ -222,9 +223,8 @@ def dbUploadBytes(
                     cursor.session_id,
                     cursor.offset,
                 )
-                
-            location += chunk_size #for getting a subset of the data array
-            cursor.offset += chunk_size #tells dropbox where we are in the file
+                location += chunk_size #for getting a subset of the data array
+                cursor.offset += chunk_size #tells dropbox where we are in the file
 
 def s3_list_files( space_name, directory):
     
