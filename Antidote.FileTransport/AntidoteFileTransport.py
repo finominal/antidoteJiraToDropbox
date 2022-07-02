@@ -212,7 +212,7 @@ def dbUploadBytes(
             if (file_size - location) <= chunk_size:
                 print( "sessionFinished: " +
                     str(dbx.files_upload_session_finish(
-                        file[location:file_size - location - 1], cursor, commit) #watch this for errors on closing file
+                        file[location:file_size - 1], cursor, commit) #watch this for errors on closing file
                         )
                 )
                 print("F Loction: " + str(location) )
