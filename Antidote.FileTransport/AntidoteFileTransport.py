@@ -40,6 +40,7 @@ print("Var Chunk size - " + str(chunkSize))
 
 workerThread = threading.Thread()
 
+destinationFolder = ""
 
 @dataclass
 class JiraAttachment:
@@ -50,6 +51,7 @@ class JiraAttachment:
     expectedSize: int
     issueType: str
     summary: str
+    customfield_10120: str #used to custom set the folder name 
 
     def getDestinationFilename(self) -> str:
         return "/" + self.customfield_10120.strip()
