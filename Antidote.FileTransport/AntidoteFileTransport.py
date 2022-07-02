@@ -36,6 +36,8 @@ chunkSize = int(os.getenv("UPLOAD_CHUNK_SIZE_MB"))
 heartbeatUrl = "abc"
 
 chunk_size_antidote = chunkSize * 1024 * 1024 
+print("Var Chunk size - " + str(chunkSize))
+
 workerThread = threading.Thread()
 
 
@@ -50,8 +52,9 @@ class JiraAttachment:
     summary: str
 
     def getDestinationFilename(self) -> str:
-        return  "/" + self.issueType.strip() + "/" + self.ticketNumber + "_" + self.summary.strip() + "/" + self.filename.strip()
-
+        return "/" + self.customfield_10120.strip()
+        #return  "/" + self.issueType.strip() + "/" + self.ticketNumber + "_" + self.summary.strip() + "/" + self.filename.strip()
+        
 
 def SendHeartBeat(url):
     #httpGet(url)
@@ -178,11 +181,10 @@ def dbUploadBytes(
 ):
     dbx = dropbox.Dropbox(access_token, timeout=timeout)
     print("Dropbox Upload Initiated")
-    print("Chunk size - " + str(chunk_size))
+    print("Chunk size - " + str(chunk_size_antidote))
     print("target_path: "+ target_path)
 
     file_size = sys.getsizeof(file)
-
     print("Upload to Dropbox: " + target_path + " Size:" + str(file_size) )
 
     if file_size <= chunk_size:
