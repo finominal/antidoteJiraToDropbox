@@ -150,7 +150,7 @@ def extractJiraAttachmentsFromMetadata(jiraData):
     results = []
     ticketNo = jiraData["key"]
     for attachment in jiraData["fields"]["attachment"]:
-        results.append( JiraAttachment( ticketNo, attachment["filename"], attachment["content"], None ,attachment["size"], jiraData["fields"]["issuetype"]["name"], jiraData["fields"]["summary"]) )
+        results.append( JiraAttachment( ticketNo, attachment["filename"], attachment["content"], None ,attachment["size"], jiraData["fields"]["issuetype"]["name"], jiraData["fields"]["summary"], jiraData["fields"]["customfield_10120"]) )
         print('extractJiraAttachmentMetadata ' + attachment["content"])
     return results
 
