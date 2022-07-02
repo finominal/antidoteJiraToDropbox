@@ -54,8 +54,7 @@ class JiraAttachment:
     customfield_10120: str #used to custom set the folder name 
 
     def getDestinationFilename(self) -> str:
-        return "/" + self.customfield_10120.strip()
-        #return  "/" + self.issueType.strip() + "/" + self.ticketNumber + "_" + self.summary.strip() + "/" + self.filename.strip()
+        return "/" + self.customfield_10120.strip() / + "/" + self.ticketNumber + "_" + self.summary.strip() + "/" + self.filename.strip()
         
 
 def SendHeartBeat(url):
