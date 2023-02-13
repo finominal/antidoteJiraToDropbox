@@ -1,6 +1,7 @@
 import os
 import flask
 import glob
+import time
 from boto3 import session
 from flask import request
 
@@ -46,6 +47,12 @@ def heathcheck():
     if checkConfigurations() == False:
         return "Configs Missing!"
     return "Health OK!"
+
+    #flask routes
+@app.route('/sleep', methods=['GET'])
+def sleep():
+    time.sleep(3) # Sleep for 3 seconds
+    return "zzzzz!"
 
 #Helpers
 def PersistRequstData(requestData, ticketNo):
